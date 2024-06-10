@@ -1,0 +1,72 @@
+---
+slug: concurrent-data-summarization
+title: Concurrent Data Summarization
+authors:
+  name: Vinh Ngo
+  title: PhD Student
+  url: https://github.com/vinhqngo5/
+  image_url: https://avatars.githubusercontent.com/u/46000904?s…00&u=f124ac5faefd9d6a15f8bcaf1f8450119997dced&v=4
+tags: [hola, docusaurus]
+---
+## Introduction
+
+With the growing interest in digitalization and its associated ecosystems, the need to store, process, index, and gain valuable insights from data is imperative. However, given the increasing volume, velocity, and variety of data that must be generated and processed, two approaches have been proposed to address this issue: Data Summarization (or synopsis) and Concurrent/Parallel Processing.
+
+The first approach, Data Summarization, is based on the observation that big data is often very large but also often ephemeral, with the value brought by different pieces of data being uneven. Instead of needing to store, process, and index the entire amount of data, we can extract useful information from massive data sets into synopses data structures, typically requiring much less space and computation. Examples include simple functions such as min, max, average, or median, and more complex ones such as statistics about the frequencies of encountered elements and heavy hitters. During this process, some information may be lost compared to the original amount of data. Therefore, depending on the problem, the processed data may exist in the form of probabilistic data structures. This means the calculation results from these compact probabilistic data structures can return an approximate result with a bounded difference from the accurate answer and can allow a small probability of deviation from the bounded guarantee.
+
+
+In another approach, researchers believe that we need to make fuller use of the resources we have, especially parallel hardware that has become popular with today's commodity devices. This is necessary in an era when Moore's Law is gradually ending, as we can no longer rely on the processing speed of hardware increasing exponentially every couple of years. However, the speed-up due to Concurrency and Parallelism will not come in straightforward, formal definitions and reasons are described rigorously in Amdahl's law. There are many things that need to be carefully designed for a concurrent system. These include Work Partitioning, Concurrent/Parallel Access Control, Resource Partitioning and Replication, Interacting With Hardware, Languages and Environments, Relax Semantics, etc. Proving an effective concurrent system is not just about increased throughput or reduced latency experimentally, it also needs to ensure its safety and liveness properties, often referred to as correctness and progress.
+
+Although the above two approaches are different, they are not mutually exclusive. This means that we can apply both methods simultaneously. Thus, the effective combination of both methods, known as Concurrent Data Summarization, is expected to bring a new perspective to big data processing.
+
+In this literature, although we cannot provide a comprehensive view of Concurrent Data Summarization, we will nevertheless discuss a concurrent data summary introduced by Idit Keidar, what it solves, how it is constructed, and how to prove the correctness of the algorithm. At the end, we will also further explore some research directions in this topic.
+
+
+## Showcase - Fast Concurrent Data Sketches
+
+### A Sequential Theta Sketch For Estimating the number of distinct values
+**Estimating the number of distinct values**  in a data set is a well-studied problem with many applications in databases, stream processing, etc. Formally, the problem is describes as: consider a data set, $S$, of $N$ items, where each item is from a universe of $n$ possible values.  **The number of distinct values** in $S$, called the zeroth frequency moment $F_0$, is the number of values from the universe that occur at least once in $S$. 
+
+|              |                                                                 |
+| ------------ | --------------------------------------------------------------- |
+| stream $S_1$ | C, D, B, B, Z, B, B, R, T, S, X, R, D, U, E, B, R, T, Y, L, M, A, T, W |
+| stream $S_2$ | T, B, B, R, W, B, B, T, T, E, T, R, R, T, E, M, W, T, R, M, M, W, B, W |
+
+**Figure. 1** Two example data streams of $N = 24$ items from a universe $\{A, B, \ldots, Z\}$ of size $n = 26$. $S_1$ has 15 distinct values while $S_2$ has 6.
+
+
+Figure 1 depicts two example streams, S1 and S2 , with 15 and 6 distinct values, respectively. The simplest and most direct approach is to maintain a sorted set of distinct values. Whenever a new item is encountered in the data stream, a binary search is performed over the sorted set. If the item is already present, it is skipped; otherwise, the new item is inserted into its correct position in the sorted set. Finally, the size of the set is calculated to return $F_0$ the number of distinct values. However, this approach won't scale well as the size of the data stream increases. It requires linear space proportional to the number of distinct items and need to perform a binary search for every new item encountered.
+  
+So, what we want here is an estimation algorithm that outputs an estimate $\hat{F}_0$, a function of the synopsis, that is guaranteed to be close to the true $F_0$ for the stream, however it requires much less space and computation. The relative error $\epsilon$ introduced by using the synopsis is calculated as $\mid \hat{F}_0 - F_0 \mid / F_0$. The desired synopsis should provide a ($\epsilon, \delta$)-approximation, which guarantees that the estimated output $\hat{F}_0$ is within the relative error of $\epsilon$ with probability at least $1 - \delta$.
+
+A common algorithm sastifies above requirements is **Theta Sketch**. It maintains a sample set and a parameter $\Theta$ to decide which elements are added to the sample set. It uses a random hash function $h$ whose outputs are uniformly distributed in the range [0, 1], and $\Theta$ is always in the same range. An incoming stream element is first hashed, and then the hash is compared to $\Theta$. In case it is smaller, the value is added to sample set. Otherwise, it is ignored. 
+Theta Sketch Algorithm
+
+```clike
+Initialize():
+    sample_set = empty set
+
+Update(element, Theta):
+    hash_value = random_hash(element)
+    if hash_value <= Theta:
+        add element to sample_set
+
+Query(Theta):
+    distinct_items = size of sample_set / Theta
+    return distinct_items
+```
+**Algorithm. 1**  Sequential Theta Sketch
+
+Because the hash outputs are uniformly distributed, the expected proportion of values smaller than $\Theta$ is $\Theta$. Therefore, we can estimate the number of distinct items in the stream by dividing the number of distinct items stored samples by $\Theta$ (assuming that the random hash function is drawn independently of the stream values). 
+
+<!-- ![Theta Sketch Example](https://holocron.so/uploads/0e2684f1-image.png) -->
+
+![Theta Sketch Example](RELAX_1st_blog.drawio.svg)
+
+**Figure. 2** An example illustrating the application of Theta Sketch ($k=2$) to estimate the number of distinct items in a datastream $S$ containing 4 unique items. The estimated result returns 5, showing a slight deviation from the actual count.
+
+### Making Sense of Relaxed consistency for Concurrent Sketches
+
+### Generic Algorithm for  Concurrent Sketches
+
+## Directions for Concurrent Data Summarization
