@@ -9,7 +9,7 @@
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/hpc-blog/assets/css/styles.44cff6f0.css">
-<script src="/hpc-blog/assets/js/runtime~main.a71ba886.js" defer="defer"></script>
+<script src="/hpc-blog/assets/js/runtime~main.085d819a.js" defer="defer"></script>
 <script src="/hpc-blog/assets/js/main.7fb3ad58.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -81,7 +81,7 @@ M834 80h400000v40h-400000z"></path></svg></span></span></span><span class="vlist
 <p><code>Merge</code>: After some updates are added to the thread-local sketch <code>local S</code>, the worker thread signals the propagator to merge it with the composable sketch. After signaling the propagator, the worker thread waits until the merge operation is completed, then the worker thread can continue using the thread-local sketch. However, as the <code>pre-filtering</code> optimization mentioned above, the worker thread can piggyback the hint it obtains from the global sketch. This way, there is no need for further synchronization to pass the hint.</p>
 <p><code>Query</code>: Query threads use the <code>Snapshot</code> method, which can be safely run concurrently with merges, hence there is no need to synchronize between the query threads and the propagator. The freshness of the query is governed by the <em><strong>r-relaxation</strong></em>.</p>
 <center><p><img decoding="async" loading="lazy" alt="Generic Concurrent Sketches" src="/hpc-blog/assets/images/parsketch1.drawio-580080d61757f83856bd62f43c829b39.svg" class="img_ev3q"></p></center>
-<p><strong>Figure. 7</strong></p>
+<p><strong>Figure. 7</strong> This diagram illustrates an example of concurrent sketches. Each worker thread has its own sequential sketch to handle a paritition of the data stream. Thread 1 is still processing data because it hasn&#x27;t reached its update limit. Thread 2 has reached its update limit and is waiting for the propagator to merge its sketch with the global sketch. Propagator is currently merging another worker&#x27;s sketch into the global sketch.</p>
 <p><strong>Further optimizations:</strong> The algorithm also employs the <code>Double Buffering</code> technique commonly used in databases to hide the latency of the Update operation in the worker thread. One limitation of the above algorithm is that worker threads are idle while waiting for the propagator to finish the merge. This may be inefficient, especially if a single propagator iterates through many local sketches. Instead of having just one local sketch, we can have two local sketches used alternately. For example, when the first local sketch is waiting for the merge operation to finish, the second local sketch can take over as the current working sketch of the worker thread. This way, we can hide the latency of the <code>Update</code> operation</p>
 <center><p><img decoding="async" loading="lazy" alt="Double Buffering technique" src="/hpc-blog/assets/images/double_buffering.drawio-7c2a163b4acc0f44d32f0a26758efe1a.svg" class="img_ev3q"></p></center>
 <p><strong>Figure. 8</strong> A diagram of a worker thread with two local sketches using <code>double buffering</code> technique. While Small Sketch 1 is waiting to be merged into the global sketch, Small Sketch 2 takes over as the current working thread to handle incoming data.</p>
