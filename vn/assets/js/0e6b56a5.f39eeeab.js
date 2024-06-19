@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkhpc_blog=self.webpackChunkhpc_blog||[]).push([[1281],{1041:e=>{e.exports=JSON.parse('{"metadata":{"permalink":"/hpc-blog/vn/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":6,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);
