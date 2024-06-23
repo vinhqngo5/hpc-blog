@@ -34,7 +34,7 @@ const config = {
 	// may want to replace "en" with "zh-Hans".
 	i18n: {
 		defaultLocale: "en",
-		locales: ["en"],
+		locales: ["en", "vn"],
 	},
 
 	presets: [
@@ -87,10 +87,14 @@ const config = {
 					},
 					{ to: "/blog", label: "Blog", position: "left" },
 					{
-						href: "https://github.com/facebook/docusaurus",
+						href: "https://github.com/vinhqngo5/",
 						label: "GitHub",
 						position: "right",
 					},
+          {
+            type: 'localeDropdown',
+            position: 'right',
+          },
 				],
 			},
 			footer: {
@@ -141,6 +145,7 @@ const config = {
 			prism: {
 				theme: prismThemes.github,
 				darkTheme: prismThemes.dracula,
+				additionalLanguages: ['latex'],
 			},
 		}),
 
