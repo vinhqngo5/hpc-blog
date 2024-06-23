@@ -50,6 +50,7 @@ So, what we want here is an estimation algorithm that outputs an estimate $\hat{
 
 <br/>
 <center>
+
 ![Theta Sketch Example](sequential_theta_sketch.drawio.svg)
 </center>
 
